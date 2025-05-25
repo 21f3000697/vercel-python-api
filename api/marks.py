@@ -2,13 +2,6 @@ import json
 from http.server import BaseHTTPRequestHandler
 
 class handler(BaseHTTPRequestHandler):
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', '*')
-        self.end_headers()
-
     def do_GET(self):
         from urllib.parse import parse_qs, urlparse
 
@@ -16,13 +9,19 @@ class handler(BaseHTTPRequestHandler):
         names = query.get('name', [])
 
         with open('q-vercel-python.json') as f:
-            data = json.load(f)
+            data = json.load(f)  # data is a list of dicts
 
         marks = []
         for name in names:
-            mark = data.get(name)
-            if mark is not None:
-                marks.append(mark)
+            found = False
+            for entry in data:
+                if entry["name"] == name:
+                    marks.append(entry["marks"])
+                    found = True
+                    break
+            # If you want to append None for missing names, uncomment below:
+            # if not found:
+            #     marks.append(None)
 
         response = json.dumps({"marks": marks})
 
